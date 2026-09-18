@@ -78,23 +78,32 @@ window.ASSAULT_FIGURES = (function () {
     var mx = o.arc ? (sx + 2 * qx + ex) / 4 : (sx + ex) / 2;
     var my = o.arc ? (sy + 2 * qy + ey) / 4 : (sy + ey) / 2;
 
+    // A white halo under the line and the head: the castles are solid ink
+    // now, and an ink arrow landing on one simply vanished — on an adjacent
+    // target that was the whole arrow.
+    function line() {
+      g.beginPath();
+      g.moveTo(sx, sy);
+      if (o.arc) g.quadraticCurveTo(qx, qy, ex, ey); else g.lineTo(ex, ey);
+    }
+    line();
+    g.strokeStyle = '#fff'; g.lineWidth = u * .17; g.lineCap = 'round'; g.stroke();
+    g.lineCap = 'butt';
     g.strokeStyle = col; g.lineWidth = u * .07;
     if (o.ok === false) g.setLineDash([u * .16, u * .14]);
-    g.beginPath();
-    g.moveTo(sx, sy);
-    if (o.arc) g.quadraticCurveTo(qx, qy, ex, ey); else g.lineTo(ex, ey);
-    g.stroke();
+    line(); g.stroke();
     g.setLineDash([]);
 
     if (o.ok !== false) {                       // arrowhead on the target
       var ax = o.arc ? ex - qx : dx, ay = o.arc ? ey - qy : dy;
       var al = Math.hypot(ax, ay) || 1, hx = ax / al, hy = ay / al, s = u * .24;
-      g.fillStyle = col;
       g.beginPath();
       g.moveTo(ex, ey);
       g.lineTo(ex - hx * s - hy * s * .55, ey - hy * s + hx * s * .55);
       g.lineTo(ex - hx * s + hy * s * .55, ey - hy * s - hx * s * .55);
-      g.closePath(); g.fill();
+      g.closePath();
+      g.strokeStyle = '#fff'; g.lineWidth = u * .10; g.lineJoin = 'round'; g.stroke();
+      g.fillStyle = col; g.fill();
     }
     if (o.lab) {                                // damage tag, on the line
       g.font = ff(u * .40, 700);
