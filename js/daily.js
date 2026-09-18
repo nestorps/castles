@@ -377,7 +377,7 @@ window.ASSAULT_DAILY = (function () {
     var rank = ART.puzzleRank(d);
     var url = location.origin && location.origin !== 'null'
       ? location.origin + location.pathname + '?d=' + date
-      : 'https://nestorps.github.io/castles/daily.html?d=' + date;
+      : 'https://nestorps.github.io/castles/?d=' + date;
     return 'ASSAULT · Daily #' + pl.index + ' · ' + date + '\n'
       + pl.R + 'x' + pl.R + ' · ' + pl.label + ' · ' + stars(rank ? rank.n : 0) + '\n'
       + mmss(elapsed()) + ' · ' + (checks ? checks + ' checks' : 'no checks') + '\n'
