@@ -272,7 +272,7 @@ window.ASSAULT_DAILY = (function () {
   }
 
   function tap(r, c, held) {
-    if (finished) return;
+    if (finished) { showWin(); return; }   // the board is done: bring the result back
     var k = P.key(r, c), why = P.legal(d, st, r, c);
     if (why) {
       board.setView({ flash: k });
@@ -401,17 +401,30 @@ window.ASSAULT_DAILY = (function () {
   function win() {
     finished = true;
     clockStop();
-    var m = recordWin();
+    recordWin();
     paintStreak();
+    say(revealed ? 'The answer is on the board.' : 'Castle taken. Tap the board to see your result.');
+    showWin();
+    flush();
+  }
+  // The panel opens inside the pointerup of the winning tap, and on a touch
+  // screen the click of that same tap comes after it and is aimed at whatever
+  // is under the finger by then — the panel. Landing on Close, it shut the
+  // panel before it was ever painted and the player saw nothing. So the
+  // panel's buttons ignore anything that arrives before GHOST ms have passed.
+  var GHOST = 500, shownAt = 0;
+  function showWin() {
+    var m = meta();
     $('winTitle').textContent = revealed ? 'Revealed' : 'Castle taken';
     $('winBody').textContent = revealed
       ? 'The answer is on the board. Tomorrow is a new siege.'
       : 'Score ' + score() + ' · ' + mmss(elapsed()) + ' · ' + tallyText()
         + (replay || !m.streak ? '' : ' · streak ' + m.streak);
-    $('win').classList.add('show');
     $('share').style.display = revealed ? 'none' : '';
-    flush();
+    $('win').classList.add('show');
+    shownAt = Date.now();
   }
+  function ghost() { return Date.now() - shownAt < GHOST; }
 
   function plural(n, one, many) { return n + ' ' + (n === 1 ? one : many); }
   function tallyText() {
@@ -517,8 +530,10 @@ window.ASSAULT_DAILY = (function () {
       board.setView({ damage: $('damage').checked });
       store.set(PREFIX + 'damage', $('damage').checked ? '1' : '0');
     });
-    $('share').addEventListener('click', share);
-    $('close').addEventListener('click', function () { $('win').classList.remove('show'); });
+    $('share').addEventListener('click', function () { if (!ghost()) share(); });
+    $('close').addEventListener('click', function () {
+      if (!ghost()) $('win').classList.remove('show');
+    });
   }
 
   // -------------------------------------------------------- generation
@@ -545,9 +560,11 @@ window.ASSAULT_DAILY = (function () {
     refresh({ flash: null });
     paintClock();
     ticker = setInterval(function () { if (clock.running) paintClock(); }, 1000);
-    say(revealed ? 'The answer is on the board.' : 'Tap a cell to place the selected unit.');
     if (P.solved(d, st)) win();
-    else if (clock.ms) clockStart();   // a board resumed mid-siege keeps its time
+    else {
+      say(revealed ? 'The answer is on the board.' : 'Tap a cell to place the selected unit.');
+      if (clock.ms) clockStart();      // a board resumed mid-siege keeps its time
+    }
     flush();
   }
 
