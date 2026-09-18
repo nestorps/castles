@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ASSAULT · siege logic puzzles</title>
+<link rel="stylesheet" href="css/page.css">
+<style>
+  /* The landing is three links and nothing else; it borrows page.css for
+     the family look and only adds the list. */
+  .doors{list-style:none;padding:0;margin:0;display:grid;gap:12px}
+  .doors a{display:block;padding:16px 18px;background:#fff;border:1px solid var(--line);
+    border-radius:10px;text-decoration:none;color:var(--ink)}
+  .doors a:hover{border-color:var(--ink)}
+  .doors b{display:block;font-size:18px;margin-bottom:2px}
+  .doors span{color:var(--mut);font-size:14px}
+  .doors .main{border:1.5px solid var(--ink)}
+</style>
+</head>
+<body>
+<header>
+  <h1>ASSAULT</h1>
+  <p class="tag">Siege logic puzzles · place the arsenal so every castle takes exactly its resistance</p>
+  <!-- Relative links only: the same file has to work from GitHub Pages and
+       from a double-click on file://. -->
+  <ul class="doors">
+    <li><a class="main" href="daily.html"><b>Daily siege</b><span>A new puzzle every day, played on your phone.</span></a></li>
+    <li><a href="asalto_v2.html"><b>Booklet</b><span>Generate a whole booklet to print: rules, a campaign road and up to a hundred puzzles.</span></a></li>
+    <li><a href="workshop.html"><b>Workshop</b><span>One puzzle to order, from a board size and a difficulty.</span></a></li>
+  </ul>
+</header>
+</body>
+</html>

@@ -1,0 +1,96 @@
+/* ASSAULT — the shell both pages wear: the booklet (asalto_v2.html)
+ * and the workshop (workshop.html). The print rules are the ones that
+ * matter most: the canvas IS the sheet, so @page is A5 portrait with no
+ * margin and everything that is not a canvas is hidden. */
+:root{--ink:#1a1a1a;--mut:#6b6b6b;--line:#e0ddd8;--bg:#faf9f7}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 "Roboto Slab",Georgia,serif;padding:24px}
+header{max-width:840px;margin:0 auto 20px}
+h1{font-size:28px;letter-spacing:.02em;margin:0 0 4px}
+.tag{color:var(--mut);margin:0 0 18px}
+.controls{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;padding:14px;border:1px solid var(--line);border-radius:10px;background:#fff}
+label{display:block;font-size:12px;color:var(--mut);margin-bottom:3px}
+input[type=number]{width:88px;padding:7px 8px;border:1px solid var(--line);border-radius:6px;font:inherit}
+select{padding:7px 8px;border:1px solid var(--line);border-radius:6px;font:inherit;background:#fff}
+button{padding:8px 14px;border:1px solid var(--ink);background:var(--ink);color:#fff;border-radius:6px;font:inherit;cursor:pointer}
+button.ghost{background:#fff;color:var(--ink);border-color:var(--line)}
+button:hover{opacity:.88}
+.check{display:flex;align-items:center;gap:6px;font-size:14px;padding-bottom:8px}
+#status{max-width:840px;margin:12px auto 0;color:var(--mut);font-size:13px}
+main{max-width:840px;margin:0 auto}
+.card{background:#fff;border:1px solid var(--line);border-radius:10px;padding:18px;margin:18px 0}
+.card h2{font-size:17px;margin:0 0 2px}
+.sub{color:var(--mut);font-size:13px;margin:0 0 14px}
+canvas{display:block;max-width:100%}
+.legend{list-style:none;padding:0;margin:12px 0 14px;font-size:13px}
+.legend li{margin:2px 0}
+.rules{max-width:840px;margin:0 auto;background:#fff;border:1px solid var(--line);border-radius:10px;padding:18px}
+.rules h2{font-size:17px;margin:0 0 10px}
+table{border-collapse:collapse;width:100%;font-size:14px;margin-bottom:14px}
+th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line)}
+th{font-size:12px;color:var(--mut);font-weight:600}
+td.dmg{font-weight:700;font-size:17px;text-align:center;width:56px;background:#f5f4f2}
+.sym{display:inline-grid;place-items:center;width:26px;height:26px;border:1.4px solid var(--ink);border-radius:50%;font-weight:700;font-size:13px}
+/* Each rule is a row: its little drawn board on the left, the text on the
+   right. The figure column is fixed so every drawing lines up. */
+.rules ul{margin:0;padding:0;list-style:none;border-top:1px solid var(--line)}
+.rules li{display:grid;grid-template-columns:264px 1fr;gap:18px;align-items:center;
+          margin:0;padding:11px 2px;border-bottom:1px solid var(--line)}
+.rules li canvas{justify-self:center;max-width:100%;height:auto}
+td.fig{width:1%;padding:4px 8px}
+td.fig canvas{display:block;max-width:none}
+.out{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+@media(max-width:700px){.rules li{grid-template-columns:1fr;gap:8px}
+  .rules li canvas{justify-self:start}}
+/* The workshop (workshop.html) adds two things to the shell: the line that
+   says what was decided for you and what a board can reach, and links, which
+   the booklet page had none of. */
+.note{max-width:840px;margin:10px auto 0;color:var(--mut);font-size:12.5px;line-height:1.5}
+a{color:inherit;text-decoration-color:var(--line);text-underline-offset:2px}
+a:hover{text-decoration-color:currentColor}
+/* The page number lives only on paper. */
+.folio{display:none}
+
+@media print{
+  /* The canvas IS the sheet: A5 portrait, full bleed, two puzzles per page. */
+  @page{size:A5 portrait;margin:0}
+  /* The rules are printed LAST, as an appendix, though on screen they belong
+     above the puzzles: that is what lets the folio on each sheet match the
+     page it comes out on. Flex is the only way to reorder the two without
+     moving them in the HTML, and it does not disturb the page breaks (the
+     printout is the same 17 pages either way, measured). */
+  body{background:#fff;padding:0;display:flex;flex-direction:column}
+  main{order:1}
+  .rules{order:2}
+  header,.controls,#status,button,.card h2,.card .sub,.legend{display:none!important}
+  /* The card IS the page, stated in millimetres rather than left to the
+     canvas's own proportions. Left to itself the canvas rounds to a
+     hundredth of a millimetre over A5 — invisible on screen, and enough to
+     push a sliver onto a second sheet: every puzzle printed as two pages,
+     one of them blank. Pinning the box and letting the canvas fill it costs
+     a squash nobody can see. */
+  .card{width:148mm;height:210mm;overflow:hidden;
+        break-inside:avoid;page-break-inside:avoid;break-after:page;page-break-after:always;
+        border:none;padding:0;margin:0}
+  /* A puzzle sheet is half an A5, so TWO of them fill one page: they must
+     NOT force a break after themselves, or every second half-page would be
+     blank. Two boxes of 105 mm add up to the 210 exactly. */
+  #puzzles .card{height:105mm;break-after:auto;page-break-after:auto}
+  .card canvas{width:100%;height:100%}
+  /* The folio sits in the clear paper below the sheet's closing hairline,
+     which runs at 198 mm of the 210. It is positioned against the card, so
+     the card has to be the positioning context.
+     The PUZZLE sheets number themselves inside the canvas — that is the
+     editorial footer, and its number is the puzzle's own, valid even when
+     the PNG travels alone — so the folio is left to the campaign sheet,
+     which has no number of its own to print. */
+  .card{position:relative}
+  .folio{display:block;position:absolute;left:0;right:0;bottom:4mm;
+         text-align:center;font-size:8pt;color:var(--mut)}
+  #puzzles .folio{display:none!important}
+  /* No bottom padding and no button row: either one spilled past the last
+     line of the rules and printed one more, empty, page. */
+  .rules{border:none;padding:18px 18px 0}
+  .rules .out{display:none!important}
+  .rules li{break-inside:avoid;page-break-inside:avoid}
+}

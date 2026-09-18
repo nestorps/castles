@@ -1,0 +1,87 @@
+/* ASSAULT — the daily challenge's own shell. It does NOT load page.css:
+ * that one pins .card in millimetres for print, and the whole of its
+ * @media print block is about paper. The daily is a phone screen, so this
+ * file has no print rules at all. The colour tokens are page.css's, so the
+ * three pages still read as one family. */
+:root{--ink:#1a1a1a;--mut:#6b6b6b;--line:#e0ddd8;--bg:#faf9f7;--gut:12px}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0 auto;max-width:600px;background:var(--bg);color:var(--ink);
+  font:15px/1.5 "Roboto Slab",Georgia,serif;
+  padding:calc(env(safe-area-inset-top) + 10px) var(--gut) calc(env(safe-area-inset-bottom) + 20px);
+  overscroll-behavior-y:none;-webkit-tap-highlight-color:transparent}
+a{color:inherit}
+
+header{margin-bottom:6px}
+.top{display:flex;align-items:baseline;justify-content:space-between}
+h1{font-size:22px;letter-spacing:.06em;margin:0}
+h1 a{text-decoration:none}
+#clock{font-size:20px;font-weight:700;font-variant-numeric:tabular-nums}
+.meta{display:flex;gap:10px;flex-wrap:wrap;color:var(--mut);font-size:13px}
+#num{font-weight:700;color:var(--ink)}
+#streak:empty{display:none}
+#streak{font-weight:700;color:var(--ink)}
+body.replay #day{font-style:italic}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.tag{border:1px solid var(--line);background:#fff;border-radius:999px;padding:1px 10px;font-size:12px}
+.tag:empty{display:none}
+.stars{letter-spacing:.08em}
+
+/* The board takes whatever is left of the screen once the header, the
+ * palette and the tools have had theirs, and never more than the width.
+ * js/play.js measures this box and draws a square inside it, so the board
+ * never scrolls and never needs a pinch to read. The vh line is the
+ * fallback for browsers without dvh. */
+#stage{display:flex;justify-content:center;align-items:center;width:100%;
+  height:min(calc(100vw - 2 * var(--gut)), calc(100vh - 300px), 560px);
+  height:min(calc(100vw - 2 * var(--gut)), calc(100dvh - 300px), 560px);
+  min-height:260px;margin:4px 0}
+#board{display:block;touch-action:manipulation;user-select:none;-webkit-user-select:none;
+  -webkit-touch-callout:none}
+
+#status{min-height:1.5em;margin:2px 0 8px;text-align:center;color:var(--mut);font-size:13px}
+#status.bad{color:#9b1c1c}
+
+/* Touch targets are 48px at least: a thumb is not a cursor. */
+#palette{display:flex;gap:6px}
+.chip{flex:1 1 0;min-width:0;min-height:64px;padding:4px 2px 5px;position:relative;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;
+  border:1.5px solid var(--line);background:#fff;color:var(--ink);border-radius:10px;
+  font:inherit;cursor:pointer}
+.chip .ico{width:30px;height:30px}
+.chip .nm{font-size:11px;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.chip .ct{position:absolute;top:3px;right:5px;font-size:12px;font-weight:700}
+.chip.on{border-color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--ink)}
+.chip.spent .ico{opacity:.35}
+.chip.over .ct{text-decoration:underline}
+
+#tools{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:8px}
+button{min-height:48px;padding:8px 6px;border:1px solid var(--ink);background:var(--ink);color:#fff;
+  border-radius:8px;font:inherit;font-size:14px;cursor:pointer}
+#tools button,button.ghost{background:#fff;color:var(--ink);border-color:var(--line)}
+button:disabled{opacity:.4;cursor:default}
+button:active{opacity:.75}
+
+#foot{display:flex;justify-content:space-between;align-items:center;margin:10px 2px 4px;
+  color:var(--mut);font-size:13px}
+.opt{display:flex;align-items:center;gap:6px;min-height:44px}
+.opt input{width:20px;height:20px;margin:0}
+
+#how{margin-top:10px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:0 14px}
+#how summary{min-height:48px;display:flex;align-items:center;font-weight:700;cursor:pointer}
+#how p,#how ul{font-size:14px;margin:0 0 10px}
+#how ul{padding-left:18px}
+#how table{border-collapse:collapse;width:100%;font-size:13px;margin:0 0 10px}
+#how th,#how td{text-align:left;padding:5px 4px;border-bottom:1px solid var(--line)}
+#how td:last-child,#how th:last-child{text-align:center}
+.hint{color:var(--mut)}
+
+#win{position:fixed;inset:0;display:none;align-items:center;justify-content:center;
+  background:rgba(250,249,247,.82);padding:var(--gut);z-index:10}
+#win.show{display:flex}
+#win .panel{width:100%;max-width:360px;background:#fff;border:1.5px solid var(--ink);border-radius:14px;
+  padding:20px;text-align:center;box-shadow:0 8px 30px rgba(0,0,0,.12)}
+#win h2{margin:0 0 6px;font-size:22px;letter-spacing:.04em}
+#win p{margin:0 0 16px;color:var(--mut)}
+#win .row{display:flex;gap:8px}
+#win .row button{flex:1}
