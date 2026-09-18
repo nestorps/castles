@@ -33,8 +33,8 @@ body.replay #day{font-style:italic}
  * never scrolls and never needs a pinch to read. The vh line is the
  * fallback for browsers without dvh. */
 #stage{display:flex;justify-content:center;align-items:center;width:100%;
-  height:min(calc(100vw - 2 * var(--gut)), calc(100vh - 300px), 560px);
-  height:min(calc(100vw - 2 * var(--gut)), calc(100dvh - 300px), 560px);
+  height:min(calc(100vw - 2 * var(--gut)), calc(100vh - 356px), 560px);
+  height:min(calc(100vw - 2 * var(--gut)), calc(100dvh - 356px), 560px);
   min-height:260px;margin:4px 0}
 #board{display:block;touch-action:manipulation;user-select:none;-webkit-user-select:none;
   -webkit-touch-callout:none}
@@ -67,13 +67,22 @@ button:active{opacity:.75}
 .opt{display:flex;align-items:center;gap:6px;min-height:44px}
 .opt input{width:20px;height:20px;margin:0}
 
-#how{margin-top:10px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:0 14px}
-#how summary{min-height:48px;display:flex;align-items:center;font-weight:700;cursor:pointer}
+/* Above the board, closed by default: shut, it costs one 48px row, and
+ * #stage's height reserves that row so the tools stay on screen. */
+#how{margin:8px 0 4px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:0 14px}
+#how summary{min-height:44px;display:flex;align-items:center;font-weight:700;cursor:pointer}
 #how p,#how ul{font-size:14px;margin:0 0 10px}
 #how ul{padding-left:18px}
-#how table{border-collapse:collapse;width:100%;font-size:13px;margin:0 0 10px}
-#how th,#how td{text-align:left;padding:5px 4px;border-bottom:1px solid var(--line)}
-#how td:last-child,#how th:last-child{text-align:center}
+#how h3{font-size:13px;letter-spacing:.08em;text-transform:uppercase;margin:14px 0 6px}
+.unit{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-top:1px solid var(--line)}
+.unit:last-of-type{border-bottom:1px solid var(--line);margin-bottom:10px}
+.unit canvas{width:44px;height:44px;flex:none}
+.unit p{margin:2px 0 0!important}
+.figs{display:flex;flex-wrap:wrap;align-items:flex-end;gap:4px 14px;margin-top:6px}
+.figs canvas{display:block}
+.dmg{display:inline-block;min-width:22px;padding:0 6px;border-radius:999px;background:var(--ink);color:#fff;
+  font-size:12px;font-weight:700;text-align:center;vertical-align:1px}
+.dmg::after{content:" dmg";font-weight:400}
 .hint{color:var(--mut)}
 
 #win{position:fixed;inset:0;display:none;align-items:center;justify-content:center;

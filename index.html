@@ -27,6 +27,64 @@
   </div>
 </header>
 
+<!-- What a player needs to know arriving from a shared link, and no more.
+     It sits above the board because that is where a newcomer looks first.
+     The full rules, with their figures, are on the booklet page. The icons
+     are painted by js/daily.js once ART.ready is in. -->
+<details id="how">
+  <summary>How to play</summary>
+  <p>Place the whole <b>arsenal</b> on empty cells so that every castle takes <b>exactly</b>
+    the damage in its corner badge — overshooting is as wrong as falling short.</p>
+
+  <h3>The units</h3>
+  <p>Units only shoot along their <b>row or column</b>, never diagonally. A unit hits
+    <b>every</b> castle in its reach, always for the same damage however far away it is,
+    and range counts to a castle’s nearest cell.</p>
+  <div class="unit">
+    <canvas data-unit="S" width="88" height="88"></canvas>
+    <div><b>Soldier</b> <span class="dmg">1</span>
+      <p>Strikes a castle on the cell right next to it. Nothing can block it.</p>
+      <div class="figs" data-figs="unit-S"></div></div>
+  </div>
+  <div class="unit">
+    <canvas data-unit="R" width="88" height="88"></canvas>
+    <div><b>Ram</b> <span class="dmg">3</span>
+      <p>Same reach as the soldier — the cell right next to it — but three times the damage.
+        Nothing can block it.</p>
+      <div class="figs" data-figs="unit-R"></div></div>
+  </div>
+  <div class="unit">
+    <canvas data-unit="A" width="88" height="88"></canvas>
+    <div><b>Archer</b> <span class="dmg">1</span>
+      <p>Shoots at a castle <b>2 or 3 cells</b> away. The shot is flat: a forest, another unit
+        or another castle in between stops it. A castle right next to it is too close.</p>
+      <div class="figs" data-figs="unit-A"></div></div>
+  </div>
+  <div class="unit">
+    <canvas data-unit="C" width="88" height="88"></canvas>
+    <div><b>Catapult</b> <span class="dmg">2</span>
+      <p>Hurls at a castle <b>3, 4 or 5 cells</b> away. The shot arcs over forests and units;
+        only another castle in between stops it. Anything closer is out of its reach.</p>
+      <div class="figs" data-figs="unit-C"></div></div>
+  </div>
+
+  <h3>The rules</h3>
+  <ul>
+    <li>The numbers on the right and along the bottom are how many units each row and column holds.</li>
+    <li>No two units touch, not even diagonally. Never on a castle or a forest.</li>
+    <li>Every unit must hit at least one castle.</li>
+    <li>There is exactly one answer, and it is reached without guessing.</li>
+  </ul>
+
+  <h3>Playing</h3>
+  <p class="hint">Pick a unit below and tap a cell to place it; tap it again to remove it.
+    <b>Empty</b> pencils in a cell you know stays empty. Hold a cell to clear it.
+    A dashed ring means a unit touches another or reaches nothing.</p>
+  <p class="hint">Your <b>score</b> drops each time you take a unit back off the board or
+    press Check: deduce first, then place. The clock does not count against it.</p>
+  <p class="hint">A new siege every day at midnight.</p>
+</details>
+
 <div id="stage"><canvas id="board" aria-label="Puzzle board"></canvas></div>
 
 <p id="status" role="status" aria-live="polite">Loading…</p>
@@ -44,31 +102,6 @@
   <span id="left"></span>
   <label class="opt"><input type="checkbox" id="damage" checked> Damage tally</label>
 </div>
-
-<!-- What a player needs to know arriving from a shared link, and no more.
-     The full rules, with their figures, are on the booklet page. -->
-<details id="how">
-  <summary>How to play</summary>
-  <p>Place the whole <b>arsenal</b> on empty cells so that every castle takes <b>exactly</b>
-    the damage in its corner badge — overshooting is as wrong as falling short.</p>
-  <table>
-    <tr><th>Unit</th><th>Range, in a straight line</th><th>Dmg</th></tr>
-    <tr><td>S · Soldier</td><td>adjacent</td><td>1</td></tr>
-    <tr><td>R · Ram</td><td>adjacent</td><td>3</td></tr>
-    <tr><td>A · Archer</td><td>2–3 cells, needs a clear line</td><td>1</td></tr>
-    <tr><td>C · Catapult</td><td>3–5 cells, flies over all but castles</td><td>2</td></tr>
-  </table>
-  <ul>
-    <li>The numbers on the right and along the bottom are how many units each row and column holds.</li>
-    <li>No two units touch, not even diagonally. Never on a castle or a forest.</li>
-    <li>Every unit must hit at least one castle. Range counts to a castle’s nearest cell.</li>
-    <li>There is exactly one answer, and it is reached without guessing.</li>
-  </ul>
-  <p class="hint">Pick a unit below and tap a cell to place it; tap it again to remove it.
-    <b>Empty</b> pencils in a cell you know stays empty. Hold a cell to clear it.
-    A dashed ring means a unit touches another or reaches nothing.</p>
-  <p class="hint">A new siege every day at midnight.</p>
-</details>
 
 <div id="win" role="dialog" aria-modal="true" aria-labelledby="winTitle">
   <div class="panel">
@@ -88,6 +121,7 @@
 <script src="js/engine.js"></script>
 <script src="js/assets.js"></script>
 <script src="js/art.js"></script>
+<script src="js/figures.js"></script>
 <script src="js/workshop.js"></script>
 <script src="js/play.js"></script>
 <script src="js/daily.js"></script>

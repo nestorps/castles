@@ -112,12 +112,22 @@ window.ASSAULT_DAILY = (function () {
 
   var A = window.Assault, ART = window.ASSAULT_ART;
   var W = window.ASSAULT_WORKSHOP, P = window.ASSAULT_PLAY, D = window.ASSAULT_DAILY;
+  var F = window.ASSAULT_FIGURES;
 
   var TYPES = ['S', 'R', 'A', 'C'];
   var NAME = { S: 'Soldier', R: 'Ram', A: 'Archer', C: 'Catapult' };
   var PENCIL = '.';                 // the "known empty" tool
   var CAP = 20000;                  // attempts; ~100x the measured worst
   var PREFIX = 'assault.daily.v1.';
+  // The score. A take-back is a unit that leaves the board or changes type,
+  // by whatever route — same tool again, a hold, another unit on top, the
+  // pencil, Undo, Clear. Placing a unit you have deduced is free; placing
+  // one to see what happens is paid for when it comes back off. A check is
+  // the same question asked of the page, so it costs too. GRACE forgives a
+  // fat finger: taking back the unit just put down, within that time, is a
+  // mis-tap, not a trial.
+  var GRACE = 3000;                 // ms
+  var CHECK_COST = 2;               // take-backs per check
 
   function $(id) { return document.getElementById(id); }
 
@@ -136,6 +146,10 @@ window.ASSAULT_DAILY = (function () {
     set: function (k, v) {
       mem[k] = v;
       try { window.localStorage.setItem(k, v); } catch (e) {}
+    },
+    remove: function (k) {
+      delete mem[k];
+      try { window.localStorage.removeItem(k); } catch (e) {}
     }
   };
   function readJSON(k, dflt) {
@@ -148,6 +162,7 @@ window.ASSAULT_DAILY = (function () {
   // ----------------------------------------------------------- page state
   var date = null, pl = null, d = null, st = null, board = null, rec = null;
   var tool = 'S', undo = [], checks = 0, lastWrong = null;
+  var takebacks = 0, fresh = null;  // fresh: {k, t} of the last unit put down
   var replay = false, finished = false, revealed = false;
   var clock = { ms: 0, since: 0, running: false }, ticker = null, saveTimer = null;
 
@@ -181,7 +196,7 @@ window.ASSAULT_DAILY = (function () {
     return {
       v: 1, ruleset: D.RULESET, seed: pl.seed, R: pl.R, rung: pl.rung,
       d: d, st: P.encode(st), ms: elapsed(), checks: checks,
-      revealed: revealed, done: finished
+      takebacks: takebacks, revealed: revealed, done: finished
     };
   }
   function save() {
@@ -232,6 +247,30 @@ window.ASSAULT_DAILY = (function () {
     $('undo').disabled = false;
   }
 
+  // Counted as a DIFFERENCE between two boards, not per gesture: there are
+  // six ways to take a unit back and a count per gesture would miss the one
+  // added next. `before` is the units map as it was; st is the board now.
+  function copyUnits() {
+    var o = {};
+    for (var k in st.units) o[k] = st.units[k];
+    return o;
+  }
+  function tally(before) {
+    var now = Date.now(), n = 0, k;
+    for (k in before) {
+      if (st.units[k] === before[k]) continue;
+      if (fresh && fresh.k === k && now - fresh.t < GRACE) continue;
+      n++;
+    }
+    takebacks += n;
+    fresh = null;
+    for (k in st.units) if (st.units[k] !== before[k]) fresh = { k: k, t: now };
+  }
+  function score() {
+    var n = d.inv.length;
+    return Math.round(100 * n / (n + takebacks + CHECK_COST * checks));
+  }
+
   function tap(r, c, held) {
     if (finished) return;
     var k = P.key(r, c), why = P.legal(d, st, r, c);
@@ -254,6 +293,7 @@ window.ASSAULT_DAILY = (function () {
       return;
     }
     push();
+    var before = copyUnits();
     if (held) {
       delete st.units[k]; delete st.empty[k];
     } else if (tool === PENCIL) {
@@ -264,6 +304,7 @@ window.ASSAULT_DAILY = (function () {
     } else {
       st.units[k] = tool; delete st.empty[k];
     }
+    tally(before);
     lastWrong = null;
     say('');
     clockStart();
@@ -365,12 +406,17 @@ window.ASSAULT_DAILY = (function () {
     $('winTitle').textContent = revealed ? 'Revealed' : 'Castle taken';
     $('winBody').textContent = revealed
       ? 'The answer is on the board. Tomorrow is a new siege.'
-      : 'Solved in ' + mmss(elapsed()) + ' · '
-        + (checks ? checks + (checks === 1 ? ' check' : ' checks') : 'no checks')
+      : 'Score ' + score() + ' · ' + mmss(elapsed()) + ' · ' + tallyText()
         + (replay || !m.streak ? '' : ' · streak ' + m.streak);
     $('win').classList.add('show');
     $('share').style.display = revealed ? 'none' : '';
     flush();
+  }
+
+  function plural(n, one, many) { return n + ' ' + (n === 1 ? one : many); }
+  function tallyText() {
+    return (takebacks ? plural(takebacks, 'take-back', 'take-backs') : 'no take-backs') + ' · '
+      + (checks ? plural(checks, 'check', 'checks') : 'no checks');
   }
 
   function shareText() {
@@ -380,7 +426,8 @@ window.ASSAULT_DAILY = (function () {
       : 'https://nestorps.github.io/castles/?d=' + date;
     return 'ASSAULT · Daily #' + pl.index + ' · ' + date + '\n'
       + pl.R + 'x' + pl.R + ' · ' + pl.label + ' · ' + stars(rank ? rank.n : 0) + '\n'
-      + mmss(elapsed()) + ' · ' + (checks ? checks + ' checks' : 'no checks') + '\n'
+      + 'Score ' + score() + ' · ' + mmss(elapsed()) + '\n'
+      + tallyText() + '\n'
       + url;
   }
   function share() {
@@ -413,7 +460,9 @@ window.ASSAULT_DAILY = (function () {
   function wireTools() {
     $('undo').addEventListener('click', function () {
       if (!undo.length || finished) return;
+      var before = st.units;
       st = P.decode(undo.pop());
+      tally(before);
       board.setPuzzle(d, st);
       lastWrong = null;
       $('undo').disabled = !undo.length;
@@ -423,7 +472,9 @@ window.ASSAULT_DAILY = (function () {
     $('clear').addEventListener('click', function () {
       if (finished) return;
       push();
+      var before = st.units;
       st = P.newState();
+      tally(before);
       board.setPuzzle(d, st);
       refresh({ wrong: [], flash: null });
       save();
@@ -475,6 +526,8 @@ window.ASSAULT_DAILY = (function () {
     d = puzzle;
     st = rec && rec.st ? P.decode(rec.st) : P.newState();
     checks = rec ? (rec.checks || 0) : 0;
+    takebacks = rec ? (rec.takebacks || 0) : 0;
+    fresh = null;
     revealed = rec ? !!rec.revealed : false;
     clock.ms = rec ? (rec.ms || 0) : 0;
     finished = false;
@@ -525,13 +578,48 @@ window.ASSAULT_DAILY = (function () {
     })();
   }
 
+  // The How to play's unit cards wear the same silhouettes as the palette
+  // and the printed sheet, and the booklet's own figure drawing for the
+  // placements. Painted here, after ART.ready, for the same reason the chips
+  // are. One canvas per scene, not one per figure: side by side, three
+  // scenes are wider than a phone, and separate canvases wrap.
+  function paintHow() {
+    var all = document.querySelectorAll('#how canvas[data-unit]'), i;
+    for (i = 0; i < all.length; i++) {
+      var t = all[i].dataset.unit, img = ART.IMG[t];
+      if (img && img.width) all[i].getContext('2d').drawImage(img, 4, 4, 80, 80);
+    }
+    var boxes = document.querySelectorAll('#how [data-figs]');
+    for (i = 0; i < boxes.length; i++) {
+      var scenes = F.FIGS[boxes[i].dataset.figs] || [];
+      boxes[i].innerHTML = '';
+      scenes.forEach(function (s) {
+        boxes[i].appendChild(F.drawFigure(document.createElement('canvas'), [s], 30));
+      });
+    }
+  }
+
   // ---------------------------------------------------------------- boot
   function boot() {
+    paintHow();
     var q = /[?&]d=([0-9]{4}-[0-9]{2}-[0-9]{2})/.exec(location.search);
     var now = D.today();
     date = q && D.valid(q[1]) ? q[1] : now;
     replay = date !== now;
     pl = D.plan(date);
+
+    // ?reset drops the day's record — board, time, checks, take-backs,
+    // revealed — so the date plays from scratch. It has to happen here, at
+    // boot: deleting the key from DevTools does not stick, because the page
+    // writes its copy back on pagehide. The streak is left alone. The flag
+    // is taken off the URL at once, so a reload does not reset again.
+    if (/[?&]reset(?:[=&]|$)/.test(location.search)) {
+      store.remove(PREFIX + date);
+      try {
+        var rest = location.search.replace(/[?&]reset(?:=[^&]*)?/, '').replace(/^&/, '?');
+        history.replaceState(null, '', location.pathname + rest + location.hash);
+      } catch (e) {}
+    }
 
     $('num').textContent = 'Daily #' + pl.index;
     $('day').textContent = date + (replay ? ' · replay' : '');
